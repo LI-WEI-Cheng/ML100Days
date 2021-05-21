@@ -35,23 +35,27 @@ plt.show()
 
 def bb_intersection_over_union(boxA, boxB):
     # determine the (x, y)-coordinates of the intersection rectangle
-    xA = '''找出比較大的X0'''
-    yA = '''找出比較大的y0'''
-    xB = '''找出比較小的X1'''
-    yB = '''找出比較小的y1'''
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
 
-    ## 計算交集區域
+    # compute the area of intersection rectangle
     interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
 
-    ## 計算各自的BBOX大小
-    boxAArea = (boxA[''] - boxA[''] + 1) * (boxA[''] - boxA[''] + 1)
-    boxBArea = (boxB[''] - boxB[''] + 1) * (boxB[''] - boxB[''] + 1)
+    # compute the area of both the prediction and ground-truth
+    # rectangles
+    boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+    boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
 
-    ## 計算IOU
-    iou = '''交集/聯集'''
+    # compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the interesection area
+    iou = interArea / float(boxAArea + boxBArea - interArea)
 
     # return the intersection over union value
     return iou
+
 IOU=bb_intersection_over_union(Ground_Truth_BBOX_Transform, Prediction_BBOX_Transform)
 print('IOU值：',IOU) # '''應該要得到0.6196482836879266'''
 
