@@ -1,65 +1,60 @@
-import numpy as np
-from keras.models import Model
-from keras.layers import Flatten
-from keras.layers import Dense
-from keras.layers import Input
-from keras.layers import Conv2D
-from keras.layers import MaxPooling2D
-from keras.layers import GlobalMaxPooling2D
-from keras.layers import GlobalAveragePooling2D
-from keras import backend as K
+from keras.layers import Flatten, Dense, Input, Conv2D, MaxPooling2D, Dropout
+from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D, TimeDistributed
 
-# input : 224*224*3
 
-def VGG16(include_top=True, input_tensor=None, input_shape=(224, 224, 1),pooling='max', classes=1000):
-
-    img_input = Input(shape=input_shape)
-
+input_shape_img = (1024, 1024, 3)
+img_input = Input(shape=input_shape_img)
+'''先過一般CNN層提取特徵'''
+def nn_base(img_input):
+    #  padding='same' 所以 經過 神經層 依樣是n*n 但 maxpooling會使其變 (n/2 * n/2)
+    # filter 數量決定輸出數量-->也就是這裡說的深度多深
+    # Block 1
     x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(img_input)
     x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
+    print(x)
+    # 縮水1/2 1024x1024 -> 512x512
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
-
+    print(x)
     # Block 2
     x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
     x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
+    print(x)
+    # 縮水1/2 512x512 -> 256x256
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
-
+    print(x)
     # Block 3
     x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
     x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
     x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
+    print(x)
+    # 縮水1/2 256x256 -> 128x128
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
-
+    print(x)
     # Block 4
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
+    # 縮水1/2 128x128 -> 64x64
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
-
+    print(x)
     # Block 5
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
+    print(x)
+    # 最後返回的x是64x64x512的feature map。
+    return x
+def rpn(base_layers, num_anchors):
 
-    if include_top:
-        # Classification block
-        x = Flatten(name='flatten')(x)
-        # 全連階層(Dense)
-        x = Dense(4096, activation='relu', name='fc1')(x)
-        x = Dense(4096, activation='relu', name='fc2')(x)
-        x = Dense(classes, activation='softmax', name='predictions')(x)
-    else:
-        if pooling == 'avg':
-            x = GlobalAveragePooling2D()(x)
-        elif pooling == 'max':
-            x = GlobalMaxPooling2D()(x)
+    x = Conv2D(512, (3, 3), padding='same', activation='relu', kernel_initializer='normal', name='rpn_conv1')(base_layers)
 
-    inputs = img_input
-    # Create model.
-    model = Model(inputs, x, name='vgg16')
+    # rpn分類和迴歸
+    x_class = Conv2D(num_anchors*2, (1, 1), activation='softmax',name='rpn_out_class')(x)
+    x_reg = Conv2D(num_anchors * 4, (1, 1), activation='linear', name='rpn_out_regress')(x)
 
-    return model
-
-model = VGG16(include_top=False)
-model.summary()
+    return x_class, x_reg, base_layers
+base_layers=nn_base(img_input)
+x_class, x_reg, base_layers=rpn(base_layers, 9)
+print('Classification支線：',x_class) # '''確認深度是否為18'''
+print('BBOX Regression 支線：',x_reg) #'''確認深度是否為36'''
+print('CNN Output：',base_layers)

@@ -24,11 +24,12 @@
 # 作業內容：
 # 運用Keras搭建簡單的Convolution2D Layer，調整Strides與Padding參數計算輸出feature map大小。
 # -------------------------------------------------------------------------------------------------------------------- #
+# Sequential()就是我們定義模型的開始
 from keras.models import Sequential
 from keras.layers import Convolution2D
 from keras.layers import MaxPooling2D
 from keras.layers import Input, Dense
-from keras.layers import Activation, Dense
+from keras.layers import Activation, Dense   # 全連接層(Dense)
 classifier=Sequential()
 # --------------------------------------------------- #
 # Convolution2D(捲積核數量,幾乘幾大小,strides=1, padding='valid', dilation_rate=1, activation=None, use_bias=True,
@@ -54,10 +55,10 @@ classifier=Sequential()
 # 卷積完，通常會做激勵函數relu，正數保持原數、負數會變成0，
 # 圖片的神經網路通常正數才是我們要的參數，幫助神經網路提高效率、減少不必要的計算
 classifier.add(Convolution2D(
-    batch_input_shape=(None, 1, 28, 28),
-    filters=32,
-    kernel_size=5,
-    strides=1,
+    batch_input_shape=(None, 1, 28, 28), # 幾筆資料
+    filters=32,  # Filter (kernel map)用幾張
+    kernel_size=5,  # 大小是幾乘幾
+    strides=1, # kernel map在移動時的步伐長度 S
     padding='same',     # Padding method
     data_format='channels_first',
 ))
@@ -75,7 +76,7 @@ classifier.add(MaxPooling2D(
 ))
 # model = Model(inputs=inputs, outputs=x)
 classifier.summary()
-# -------------------------------------------------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------------------------------------- #
 classifier.add(Convolution2D(
     batch_input_shape=(None, 1, 28, 28),
     filters=32,
@@ -92,13 +93,53 @@ classifier.add(MaxPooling2D(
     data_format='channels_first',
 ))
 classifier.summary()
+# --------------------------------------------------------------------------------------------------------- #
+# 和作業解答比較一下，卷積長一樣~
+classifier1=Sequential()
 
-
-
-
-
-
-
+classifier1.add(Convolution2D(
+    batch_input_shape=(None, 1, 13, 13),
+    filters=32,
+    kernel_size=6,
+    strides=1,
+    padding='same',     # Padding method
+    data_format='channels_first',
+))
+classifier1.summary()
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------------------------------------------- #
+# 作業解答
+from keras.models import Sequential
+from keras.layers import Convolution2D
+from keras.layers import Input, Dense
+from keras.models import Model
+## Same padding、strides=(1,1)
+classifier=Sequential()
+inputs = Input(shape=(13,13,1))
+x=Convolution2D(filters=32,kernel_size=(6,6), strides=(1, 1),padding='SAME')(inputs)
+model = Model(inputs=inputs, outputs=x)
+model.summary()
+## Same padding、strides=(2,2)
+classifier=Sequential()
+inputs = Input(shape=(13,13,1))
+x=Convolution2D(filters=32,kernel_size=(6,6), strides=(2, 2),padding='SAME')(inputs)
+model = Model(inputs=inputs, outputs=x)
+model.summary()
+## Valid padding、strides=(1,1)
+classifier=Sequential()
+inputs = Input(shape=(13,13,1))
+x=Convolution2D(filters=32,kernel_size=(6,6), strides=(1, 1),padding='Valid')(inputs)
+model = Model(inputs=inputs, outputs=x)
+model.summary()
+## Valid padding、strides=(2,2)
+classifier=Sequential()
+inputs = Input(shape=(13,13,1))
+x=Convolution2D(filters=32,kernel_size=(6,6), strides=(2, 2),padding='Valid')(inputs)
+model = Model(inputs=inputs, outputs=x)
+model.summary()
 
 
 

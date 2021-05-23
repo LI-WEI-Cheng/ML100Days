@@ -175,6 +175,8 @@ class RandomBrightness(object):
         delta = random.uniform(-self.delta, self.delta)
         if random.randint(0, 1):
             image = image + delta
+        # 也就是說，截取的意思，超出的部分就把它強置為邊界部分。
+        # numpy. clip ( a ,  a_min ,  a_max ,  out=None )
         image = np.clip(image, 0.0, 255.0)
         return image
 
