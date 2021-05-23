@@ -14,9 +14,10 @@ Region_Proposal=[1800,800,1500,1500] ##這裡是我們自己隨意設的，數�
 plt.rcParams['figure.figsize'] = (20, 10)
 fig,ax = plt.subplots(1)
 print(ax)
-
 ##畫出圖片
 ax.imshow(image)
+
+
 # 畫BBOX-Prediction
 rect = patches.Rectangle((Region_Proposal[0],Region_Proposal[1]),Region_Proposal[2],Region_Proposal[3],linewidth=3,edgecolor='r',facecolor='none',)
 ax.text(1800,800,'Region_Proposal',withdash=True,size=20)
